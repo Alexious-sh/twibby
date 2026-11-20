@@ -85,9 +85,24 @@ bool do_send_report(uint8_t interface, const uint8_t* report_with_id, uint8_t le
 void gpio_pins_init() {
     gpio_valid_pins_mask = get_gpio_valid_pins_mask();
     gpio_init_mask(gpio_valid_pins_mask);
+#ifdef TOUCHER_GPIO_PIN
+    // The toucher drives a transistor base. Hold it low from boot so the
+    // touch is never asserted before (or without) a valid config.
+    if (gpio_valid_pins_mask & (1u << TOUCHER_GPIO_PIN)) {
+        gpio_put(TOUCHER_GPIO_PIN, false);
+        gpio_set_dir(TOUCHER_GPIO_PIN, GPIO_OUT);
+        gpio_pull_down(TOUCHER_GPIO_PIN);
+    }
+#endif
 }
 
 void set_gpio_inout_masks(uint32_t in_mask, uint32_t out_mask) {
+#ifdef TOUCHER_GPIO_PIN
+    // Never treat the toucher pin as an input: inputs get a pull-up, which
+    // would bias the transistor on and hold a permanent touch.
+    in_mask &= ~(1u << TOUCHER_GPIO_PIN);
+    out_mask |= 1u << TOUCHER_GPIO_PIN;
+#endif
     // if some pin appears as both input and output, input wins
     gpio_out_mask = (out_mask & ~in_mask) & gpio_valid_pins_mask;
     // we treat all pins except the output ones as input so that the monitor works
@@ -101,6 +116,14 @@ void set_gpio_dir() {
     for (uint8_t i = 0; i <= 29; i++) {
         uint32_t bit = 1 << i;
         if (gpio_valid_pins_mask & bit) {
+#ifdef TOUCHER_GPIO_PIN
+            if (i == TOUCHER_GPIO_PIN) {
+                // keep it pulled down so it stays off even if left floating
+                // (e.g. in open-drain output mode)
+                gpio_pull_down(i);
+                continue;
+            }
+#endif
             gpio_set_pulls(i, gpio_in_mask & bit, false);
         }
     }

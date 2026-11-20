@@ -15,6 +15,9 @@
 
 #define PICO_DEFAULT_PIO_USB_DP_PIN 26
 
+// YubiKey toucher output. Always an output, held low when inactive.
+#define TOUCHER_GPIO_PIN 2
+
 // --- RP2350 VARIANT ---
 #define PICO_RP2350A 1
 

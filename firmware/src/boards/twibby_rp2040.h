@@ -13,6 +13,10 @@
 
 #define PICO_DEFAULT_PIO_USB_DP_PIN 26
 
+// YubiKey toucher output (TRG_EN -> BFR182 base). Always an output, held low
+// when inactive. Map a key to usage 0xFFF40002 to trigger it.
+#define TOUCHER_GPIO_PIN 2
+
 // --- FLASH ---
 
 #define PICO_BOOT_STAGE2_CHOOSE_W25Q080 1
