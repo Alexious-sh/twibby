@@ -58,6 +58,33 @@ Schematic, PCB, etc: [OSHWLab](https://oshwlab.com/buglloc/twibby)
 
 ---
 
+## Building the Firmware
+
+The firmware project is in `firmware/`. To build for the Waveshare RP2350 USB-A,
+initialize the repository submodules and configure a clean Ninja build directory:
+
+```sh
+git submodule update --init --recursive
+cmake --fresh -S firmware -B firmware/build -G Ninja \
+  -DPICO_BOARD=waveshare_rp2350_usb_a
+cmake --build firmware/build --target remapper
+```
+
+Use the Raspberry Pi Pico VS Code extension with Pico SDK 2.3.1, toolchain
+15_2_Rel1, and picotool 2.3.1, as specified in `firmware/CMakeLists.txt`.
+When building without the extension, set `PICO_SDK_PATH` to Pico SDK 2.3.1
+before configuring. `cmake --fresh` requires CMake 3.24 or newer; alternatively,
+configure a new build directory when changing board or SDK to avoid stale
+CMake platform settings.
+
+To flash from BOOTSEL mode with picotool:
+
+```sh
+picotool load firmware/build/remapper.elf -fx
+```
+
+---
+
 ## License
 
 This project builds upon [Remapper](https://github.com/jfedor2/hid-remapper), licensed under MIT. All additions and hardware designs are also released under MIT unless noted otherwise.
